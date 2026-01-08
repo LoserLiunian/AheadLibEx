@@ -13,8 +13,10 @@ uuid = { version = "1", features = ["v4", "fast-rng"] }
 windows-sys = { version = "0.52", features = ["Win32_System_Console", "Win32_Foundation"] }
 
 [profile.release]
-opt-level = "z"
-lto = "thin"
-codegen-units = 1
-panic = "abort"
-strip = "symbols"
+opt-level = 3          # 最高性能优化
+lto = "fat"            # 全量 LTO，最强优化
+codegen-units = 1      # 单 codegen unit，利于跨模块优化
+panic = "abort"        # 更快、更简单
+strip = false          # 保留符号（方便调试 & stacktrace）
+incremental = false    # 避免影响优化质量
+debug = false          # 不生成调试信息

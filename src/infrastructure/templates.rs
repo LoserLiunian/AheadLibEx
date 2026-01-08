@@ -535,47 +535,58 @@ pub fn render_c(ctx: &VsTemplateContext) -> String {
 
     let mut export_pragmas = String::new();
     for exp in &exports {
-        let noname = if exp.label.starts_with("Noname") {
-            ",NONAME"
+        let entry = if exp.raw_name.starts_with('#') {
+            // NONAME：仅 ordinal
+            format!("_AheadLibEx_{},@{},NONAME", exp.stub, exp.ordinal)
         } else {
-            ""
+            // 有名导出
+            format!("{}=_AheadLibEx_{},@{}", exp.raw_name, exp.stub, exp.ordinal)
         };
-        let entry = format!("\"{}=_AheadLibEx_{},@{}{}\"", exp.label, exp.stub, exp.ordinal, noname);
-        let _ = writeln!(export_pragmas, "#pragma comment(linker, \"/EXPORT:{}\")", entry);
+
+        writeln!(
+            export_pragmas,
+            "#pragma comment(linker, \"/EXPORT:{}\")",
+            entry
+        )
+        .unwrap();
     }
 
     let mut forward_decls = String::new();
     for exp in &exports {
-        let _ = writeln!(
+        writeln!(
             forward_decls,
             "AHEADLIB_EXTERN PVOID pfnAheadLibEx_{};",
             exp.stub
-        );
+        )
+        .unwrap();
     }
 
     let mut trampolines = String::new();
     for exp in &exports {
-        let _ = writeln!(
+        writeln!(
             trampolines,
             "__declspec(naked) AHEADLIB_EXTERN void AheadLibEx_{name}(void) {{ __asm {{ jmp dword ptr [pfnAheadLibEx_{name}] }} }}",
             name = exp.stub
-        );
+        )
+        .unwrap();
     }
 
     let mut init_forwarders = String::new();
     for exp in &exports {
-        if exp.label.starts_with("Noname") {
-            let _ = writeln!(
+        if exp.raw_name.starts_with('#') {
+            writeln!(
                 init_forwarders,
                 "    pfnAheadLibEx_{} = get_address(MAKEINTRESOURCEA({}));",
                 exp.stub, exp.ordinal
-            );
+            )
+            .unwrap();
         } else {
-            let _ = writeln!(
+            writeln!(
                 init_forwarders,
                 "    pfnAheadLibEx_{} = get_address(\"{}\");",
                 exp.stub, exp.raw_name
-            );
+            )
+            .unwrap();
         }
     }
 
@@ -591,43 +602,54 @@ pub fn render_c(ctx: &VsTemplateContext) -> String {
     )
 }
 
+
 pub fn render_c_x64(ctx: &VsTemplateContext) -> String {
     let exports = prepare_exports(ctx.exports);
 
     let mut export_pragmas = String::new();
     for exp in &exports {
-        let noname = if exp.label.starts_with("Noname") {
-            ",NONAME"
+        let entry = if exp.raw_name.starts_with('#') {
+            // NONAME
+            format!("AheadLibEx_{},@{},NONAME", exp.stub, exp.ordinal)
         } else {
-            ""
+            // 有名导出
+            format!("{}=AheadLibEx_{},@{}", exp.raw_name, exp.stub, exp.ordinal)
         };
-        let entry = format!("\"{}=AheadLibEx_{},@{}{}\"", exp.label, exp.stub, exp.ordinal, noname);
-        let _ = writeln!(export_pragmas, "#pragma comment(linker, \"/EXPORT:{}\")", entry);
+
+        writeln!(
+            export_pragmas,
+            "#pragma comment(linker, \"/EXPORT:{}\")",
+            entry
+        )
+        .unwrap();
     }
 
     let mut forward_decls = String::new();
     for exp in &exports {
-        let _ = writeln!(
+        writeln!(
             forward_decls,
             "AHEADLIB_EXTERN PVOID pfnAheadLibEx_{};",
             exp.stub
-        );
+        )
+        .unwrap();
     }
 
     let mut init_forwarders = String::new();
     for exp in &exports {
-        if exp.label.starts_with("Noname") {
-            let _ = writeln!(
+        if exp.raw_name.starts_with('#') {
+            writeln!(
                 init_forwarders,
                 "    pfnAheadLibEx_{} = get_address(MAKEINTRESOURCEA({}));",
                 exp.stub, exp.ordinal
-            );
+            )
+            .unwrap();
         } else {
-            let _ = writeln!(
+            writeln!(
                 init_forwarders,
                 "    pfnAheadLibEx_{} = get_address(\"{}\");",
                 exp.stub, exp.raw_name
-            );
+            )
+            .unwrap();
         }
     }
 
@@ -641,6 +663,7 @@ pub fn render_c_x64(ctx: &VsTemplateContext) -> String {
         ],
     )
 }
+
 
 pub fn render_asm_x64(ctx: &VsTemplateContext) -> String {
     let exports = prepare_exports(ctx.exports);
