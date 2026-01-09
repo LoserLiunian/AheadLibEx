@@ -199,14 +199,14 @@ fn cl_item_group(base: &str, is_x64: bool) -> String {
     if is_x64 {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x64.c" />
+    <ClCompile Include="{base}_x64.cpp" />
   </ItemGroup>
 "#
         )
     } else {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x86.c" />
+    <ClCompile Include="{base}_x86.cpp" />
   </ItemGroup>
 "#
         )
@@ -398,7 +398,7 @@ fn filter_itemgroups(base: &str, is_x64: bool) -> String {
     if is_x64 {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x64.c">
+    <ClCompile Include="{base}_x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -412,7 +412,7 @@ fn filter_itemgroups(base: &str, is_x64: bool) -> String {
     } else {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x86.c">
+    <ClCompile Include="{base}_x86.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -555,7 +555,7 @@ pub fn render_c(ctx: &VsTemplateContext) -> String {
     for exp in &exports {
         writeln!(
             forward_decls,
-            "AHEADLIB_EXTERN PVOID pfnAheadLibEx_{};",
+            "AHEADLIB_EXTERN FARPROC pfnAheadLibEx_{} = nullptr;",
             exp.stub
         )
         .unwrap();
@@ -628,7 +628,7 @@ pub fn render_c_x64(ctx: &VsTemplateContext) -> String {
     for exp in &exports {
         writeln!(
             forward_decls,
-            "AHEADLIB_EXTERN PVOID pfnAheadLibEx_{};",
+            "AHEADLIB_EXTERN FARPROC pfnAheadLibEx_{} = nullptr;",
             exp.stub
         )
         .unwrap();

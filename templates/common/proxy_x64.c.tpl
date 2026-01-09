@@ -21,16 +21,16 @@
 
 static HMODULE g_origin_module_handle;
 
-static VOID WINAPI free_origin_module(void)
+static void WINAPI free_origin_module()
 {
     if (g_origin_module_handle)
     {
         FreeLibrary(g_origin_module_handle);
-        g_origin_module_handle = NULL;
+        g_origin_module_handle = nullptr;
     }
 }
 
-static BOOL WINAPI load_original_module(void)
+static bool WINAPI load_original_module()
 {
     TCHAR module_path[MAX_PATH] = { 0 };
     TCHAR message[MAX_PATH] = { 0 };
@@ -43,10 +43,10 @@ static BOOL WINAPI load_original_module(void)
     if (!g_origin_module_handle)
     {
         wsprintf(message, TEXT("Cannot locate %s, AheadLibEx cannot continue.\nerror code:0x%08X"), module_path, GetLastError());
-        MessageBox(NULL, message, TEXT("AheadLibEx"), MB_ICONSTOP);
+        MessageBox(nullptr, message, TEXT("AheadLibEx"), MB_ICONSTOP);
     }
 
-    return g_origin_module_handle != NULL;
+    return g_origin_module_handle != nullptr;
 }
 
 static FARPROC WINAPI get_address(PCSTR proc_name)
@@ -62,14 +62,14 @@ static FARPROC WINAPI get_address(PCSTR proc_name)
             proc_name = ordinal_name;
         }
         wsprintf(message, TEXT("Cannot locate export %hs."), proc_name);
-        MessageBox(NULL, message, TEXT("AheadLibEx"), MB_ICONSTOP);
+        MessageBox(nullptr, message, TEXT("AheadLibEx"), MB_ICONSTOP);
 
         ExitProcess(0);
     }
     return address;
 }
 
-static VOID WINAPI init_forwarders(void)
+static void WINAPI init_forwarders()
 {
 {{INIT_FORWARDERS}}
 }
@@ -78,7 +78,7 @@ DWORD WINAPI patch_thread_proc(LPVOID context)
 {
     UNREFERENCED_PARAMETER(context);
     // TODO: Put custom patch logic here when the target process matches.
-    MessageBox(NULL, TEXT("AheadLibExTest!"), TEXT("AheadLibEx"), MB_OK);
+    MessageBox(nullptr, TEXT("AheadLibExTest!"), TEXT("AheadLibEx"), MB_OK);
     return 0;
 }
 
@@ -95,7 +95,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, PVOID reserved)
         init_forwarders();
 
         // TODO: your patch process begins here.
-        HANDLE thread = CreateThread(NULL, 0, patch_thread_proc, NULL, 0, NULL);
+        HANDLE thread = CreateThread(nullptr, 0, patch_thread_proc, nullptr, 0, nullptr);
         if (thread)
         {
             CloseHandle(thread);
