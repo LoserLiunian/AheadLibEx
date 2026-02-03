@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-project({{CMAKE_PROJECT_NAME}} LANGUAGES C)
+project({{CMAKE_PROJECT_NAME}} LANGUAGES C CXX)
 
 # Toolchain selection:
 # - MSVC / clang-cl: MASM (.asm)

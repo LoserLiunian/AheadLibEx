@@ -519,10 +519,10 @@ fn write_source_files(
     };
 
     if let Some(content) = c_src_x86 {
-        write_file(&format!("{}_x86.c", base_name), &content)?;
+        write_file(&format!("{}_x86.cpp", base_name), &content)?;
     }
     if let Some(content) = c_src_x64 {
-        write_file(&format!("{}_x64.c", base_name), &content)?;
+        write_file(&format!("{}_x64.cpp", base_name), &content)?;
     }
     if let Some(content) = asm_src_x86 {
         write_file(&format!("{}_x86_jump.asm", base_name), &content)?;
@@ -618,10 +618,10 @@ fn write_cmake_project(
     write_file("CMakeLists.txt", &cmake_lists)?;
 
     if let Some(content) = c_src_x86 {
-        write_file(&format!("{}_x86.c", base_name), &content)?;
+        write_file(&format!("{}_x86.cpp", base_name), &content)?;
     }
     if let Some(content) = c_src_x64 {
-        write_file(&format!("{}_x64.c", base_name), &content)?;
+        write_file(&format!("{}_x64.cpp", base_name), &content)?;
     }
     if let Some(content) = asm_src_x86 {
         write_file(&format!("{}_x86_jump.asm", base_name), &content)?;
@@ -717,10 +717,10 @@ fn write_vs2022_project(
     write_file(&format!("{}.vcxproj.filters", project_name), &filters)?;
     write_file(&format!("{}.vcxproj.user", project_name), &user)?;
     if let Some(content) = c_src_x86 {
-        write_file(&format!("{}_x86.c", base_name), &content)?;
+        write_file(&format!("{}_x86.cpp", base_name), &content)?;
     }
     if let Some(content) = c_src_x64 {
-        write_file(&format!("{}_x64.c", base_name), &content)?;
+        write_file(&format!("{}_x64.cpp", base_name), &content)?;
     }
     if let Some(content) = asm_src_x86 {
         write_file(&format!("{}_x86_jump.asm", base_name), &content)?;
@@ -810,10 +810,10 @@ fn write_vs2026_project(
     write_file(&format!("{}.vcxproj.filters", project_name), &filters)?;
     write_file(&format!("{}.vcxproj.user", project_name), &user)?;
     if let Some(content) = c_src_x86 {
-        write_file(&format!("{}_x86.c", base_name), &content)?;
+        write_file(&format!("{}_x86.cpp", base_name), &content)?;
     }
     if let Some(content) = c_src_x64 {
-        write_file(&format!("{}_x64.c", base_name), &content)?;
+        write_file(&format!("{}_x64.cpp", base_name), &content)?;
     }
     if let Some(content) = asm_src_x86 {
         write_file(&format!("{}_x86_jump.asm", base_name), &content)?;

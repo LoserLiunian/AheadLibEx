@@ -68,8 +68,8 @@ cmake --build build --config Release
 生成文件名以输入 DLL 的文件名主体为基准（例如 `version.dll` 的主体为 `version`）。
 
 `source`：
-- x86：`<stem>_x86.c`、`<stem>_x86_jump.asm`、`<stem>_x86_jump.S`、`<stem>.def`
-- x64：`<stem>_x64.c`、`<stem>_x64_jump.asm`、`<stem>_x64_jump.S`、`<stem>.def`
+- x86：`<stem>_x86.cpp`、`<stem>_x86_jump.asm`、`<stem>_x86_jump.S`、`<stem>.def`
+- x64：`<stem>_x64.cpp`、`<stem>_x64_jump.asm`、`<stem>_x64_jump.S`、`<stem>.def`
 
 `cmake`：
 - `CMakeLists.txt`
@@ -78,14 +78,14 @@ cmake --build build --config Release
 `vs2022`：
 - `AheadlibEx_<stem>.sln`
 - `<stem>.vcxproj`、`<stem>.vcxproj.filters`、`<stem>.vcxproj.user`
-- x86：`<stem>_x86.c`、`<stem>_x86_jump.asm`、`<stem>.def`
-- x64：`<stem>_x64.c`、`<stem>_x64_jump.asm`、`<stem>.def`
+- x86：`<stem>_x86.cpp`、`<stem>_x86_jump.asm`、`<stem>.def`
+- x64：`<stem>_x64.cpp`、`<stem>_x64_jump.asm`、`<stem>.def`
 
 `vs2026`：
 - `AheadlibEx_<stem>.slnx`
 - `<stem>.vcxproj`、`<stem>.vcxproj.filters`、`<stem>.vcxproj.user`
-- x86：`<stem>_x86.c`、`<stem>_x86_jump.asm`、`<stem>.def`
-- x64：`<stem>_x64.c`、`<stem>_x64_jump.asm`、`<stem>.def`
+- x86：`<stem>_x86.cpp`、`<stem>_x86_jump.asm`、`<stem>.def`
+- x64：`<stem>_x64.cpp`、`<stem>_x64_jump.asm`、`<stem>.def`
 
 说明：
 - `.asm` 为 MASM（MSVC 与 clang-cl 工具链）。

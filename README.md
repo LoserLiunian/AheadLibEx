@@ -74,8 +74,8 @@ cmake --build build --config Release
 The generated filenames are based on the input DLL stem (e.g. `version.dll` -> `version`).
 
 `source`:
-- x86: `<stem>_x86.c`, `<stem>_x86_jump.asm`, `<stem>_x86_jump.S`, `<stem>.def`
-- x64: `<stem>_x64.c`, `<stem>_x64_jump.asm`, `<stem>_x64_jump.S`, `<stem>.def`
+- x86: `<stem>_x86.cpp`, `<stem>_x86_jump.asm`, `<stem>_x86_jump.S`, `<stem>.def`
+- x64: `<stem>_x64.cpp`, `<stem>_x64_jump.asm`, `<stem>_x64_jump.S`, `<stem>.def`
 
 `cmake`:
 - `CMakeLists.txt`
@@ -84,14 +84,14 @@ The generated filenames are based on the input DLL stem (e.g. `version.dll` -> `
 `vs2022`:
 - `AheadlibEx_<stem>.sln`
 - `<stem>.vcxproj`, `<stem>.vcxproj.filters`, `<stem>.vcxproj.user`
-- x86: `<stem>_x86.c`, `<stem>_x86_jump.asm`, `<stem>.def`
-- x64: `<stem>_x64.c`, `<stem>_x64_jump.asm`, `<stem>.def`
+- x86: `<stem>_x86.cpp`, `<stem>_x86_jump.asm`, `<stem>.def`
+- x64: `<stem>_x64.cpp`, `<stem>_x64_jump.asm`, `<stem>.def`
 
 `vs2026`:
 - `AheadlibEx_<stem>.slnx`
 - `<stem>.vcxproj`, `<stem>.vcxproj.filters`, `<stem>.vcxproj.user`
-- x86: `<stem>_x86.c`, `<stem>_x86_jump.asm`, `<stem>.def`
-- x64: `<stem>_x64.c`, `<stem>_x64_jump.asm`, `<stem>.def`
+- x86: `<stem>_x86.cpp`, `<stem>_x86_jump.asm`, `<stem>.def`
+- x64: `<stem>_x64.cpp`, `<stem>_x64_jump.asm`, `<stem>.def`
 
 Notes:
 - `.asm` is MASM (MSVC/clang-cl toolchains).

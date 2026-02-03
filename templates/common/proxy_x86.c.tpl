@@ -3,7 +3,9 @@
 // Blog: https://www.winsec.cn
 // Github: https://github.com/i1tao/AheadLibEx
 
+#include <iostream>
 #include <windows.h>
+#include <strsafe.h>
 
 #ifdef UNREFERENCED_PARAMETER
 #undef UNREFERENCED_PARAMETER
@@ -26,12 +28,12 @@
 
 static HMODULE g_origin_module_handle;
 
-static VOID WINAPI free_origin_module(void)
+static VOID WINAPI free_origin_module()
 {
     if (g_origin_module_handle)
     {
         FreeLibrary(g_origin_module_handle);
-        g_origin_module_handle = NULL;
+        g_origin_module_handle = nullptr;
     }
 }
 
@@ -42,25 +44,36 @@ static BOOL WINAPI load_original_module(HMODULE module)
 
 static FARPROC WINAPI get_address(PCSTR proc_name)
 {
-    CHAR ordinal_name[64];
-    TCHAR message[MAX_PATH];
+    CHAR ordinal_name[64] = { 0 };
+    WCHAR message[MAX_PATH] = { 0 };
+
+    if (!g_origin_module_handle)
+    {
+        MessageBoxW(nullptr, L"Original module not loaded.", L"AheadLibEx", MB_ICONSTOP);
+        ExitProcess(1);
+    }
+
     FARPROC address = GetProcAddress(g_origin_module_handle, proc_name);
     if (!address)
     {
-        if (HIWORD(proc_name) == 0)
+
+        if (((ULONG_PTR)proc_name >> 16) == 0)
         {
-            wsprintfA(ordinal_name, "#%d", proc_name);
+            WORD ord = LOWORD((ULONG_PTR)proc_name);
+            StringCchPrintfA(ordinal_name, _countof(ordinal_name), "#%u", ord);
             proc_name = ordinal_name;
         }
-        wsprintf(message, TEXT("Cannot locate export %hs."), proc_name);
-        MessageBox(NULL, message, TEXT("AheadLibEx"), MB_ICONSTOP);
 
-        ExitProcess(0);
+        StringCchPrintfW(message, MAX_PATH, L"Cannot locate export %hs.", proc_name);
+        MessageBoxW(nullptr, message, L"AheadLibEx", MB_ICONSTOP);
+
+        ExitProcess(1);
     }
+
     return address;
 }
 
-static VOID WINAPI init_forwarders(void)
+static VOID WINAPI init_forwarders()
 {
 {{INIT_FORWARDERS}}
 }
@@ -69,7 +82,14 @@ DWORD WINAPI patch_thread_proc(LPVOID context)
 {
     UNREFERENCED_PARAMETER(context);
     // TODO: Put custom patch logic here when the target process matches.
-    MessageBox(NULL, TEXT("AheadLibExTest!"), TEXT("AheadLibEx"), MB_OK);
+
+    FreeConsole();
+    AllocConsole();
+    FILE* fp;
+    freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
+
+    MessageBoxW(nullptr, L"AheadLibExTest!", L"AheadLibEx", MB_OK);
     return 0;
 }
 
@@ -86,7 +106,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, PVOID reserved)
         init_forwarders();
 
         // TODO: your patch process begins here.
-        HANDLE thread = CreateThread(NULL, 0, patch_thread_proc, NULL, 0, NULL);
+        HANDLE thread = CreateThread(nullptr, 0, patch_thread_proc, nullptr, 0, nullptr);
         if (thread)
         {
             CloseHandle(thread);

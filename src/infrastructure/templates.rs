@@ -170,115 +170,164 @@ fn render_load_origin_module(ctx: &VsTemplateContext) -> String {
     match ctx.origin_load_mode {
         OriginLoadMode::SystemDir => {
             let dll = escape_c_text_literal(ctx.dll_name);
-            let _ = writeln!(out, "    TCHAR module_path[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "    TCHAR message[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    UNREFERENCED_PARAMETER(module);");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    GetSystemDirectory(module_path, MAX_PATH);");
-            let _ = writeln!(out, "    lstrcat(module_path, TEXT(\"\\\\\"));");
-            let _ = writeln!(out, "    lstrcat(module_path, TEXT(\"{}\"));", dll);
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    g_origin_module_handle = LoadLibrary(module_path);");
-            let _ = writeln!(out, "    if (!g_origin_module_handle)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        wsprintf(message, TEXT(\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\"), module_path, GetLastError());");
-            let _ = writeln!(out, "        MessageBox(NULL, message, TEXT(\"AheadLibEx\"), MB_ICONSTOP);");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    return g_origin_module_handle != NULL;");
+let _ = writeln!(out, "    WCHAR module_path[MAX_PATH] = {{ 0 }};");
+let _ = writeln!(out, "    WCHAR message[MAX_PATH] = {{ 0 }};");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    UNREFERENCED_PARAMETER(module);");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    UINT len = GetSystemDirectoryW(module_path, MAX_PATH);");
+let _ = writeln!(out, "    if (len == 0 || len >= MAX_PATH)");
+let _ = writeln!(out, "    {{");
+let _ = writeln!(out, "        StringCchPrintfW(message, MAX_PATH,");
+let _ = writeln!(out, "            L\"GetSystemDirectory failed.\\\\nerror code:0x%08X\", GetLastError());");
+let _ = writeln!(out, "        MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+let _ = writeln!(out, "        return FALSE;");
+let _ = writeln!(out, "    }}");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    if (len > 0 && module_path[len - 1] != L'\\\\')");
+let _ = writeln!(out, "    {{");
+let _ = writeln!(out, "        if (FAILED(StringCchCatW(module_path, MAX_PATH, L\"\\\\\")))");
+let _ = writeln!(out, "        {{");
+let _ = writeln!(out, "            MessageBoxW(nullptr, L\"Path buffer overflow.\", L\"AheadLibEx\", MB_ICONSTOP);");
+let _ = writeln!(out, "            return FALSE;");
+let _ = writeln!(out, "        }}");
+let _ = writeln!(out, "    }}");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    if (FAILED(StringCchCatW(module_path, MAX_PATH, L\"{}\")))", dll);
+let _ = writeln!(out, "    {{");
+let _ = writeln!(out, "        MessageBoxW(nullptr, L\"Path buffer overflow.\", L\"AheadLibEx\", MB_ICONSTOP);");
+let _ = writeln!(out, "        return FALSE;");
+let _ = writeln!(out, "    }}");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    g_origin_module_handle = LoadLibraryW(module_path);");
+let _ = writeln!(out, "    if (!g_origin_module_handle)");
+let _ = writeln!(out, "    {{");
+let _ = writeln!(out, "        StringCchPrintfW(message, MAX_PATH,");
+let _ = writeln!(out, "            L\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\",");
+let _ = writeln!(out, "            module_path, GetLastError());");
+let _ = writeln!(out, "        MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+let _ = writeln!(out, "        return FALSE;");
+let _ = writeln!(out, "    }}");
+let _ = writeln!(out, "");
+let _ = writeln!(out, "    return TRUE;");
+
         }
         OriginLoadMode::SameDir { original_name } => {
-            let original = escape_c_text_literal(original_name);
-            let _ = writeln!(out, "    TCHAR module_path[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "    TCHAR message[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    DWORD n = GetModuleFileName(module, module_path, MAX_PATH);");
-            let _ = writeln!(out, "    if (n == 0 || n >= MAX_PATH)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        wsprintf(message, TEXT(\"GetModuleFileName failed, AheadLibEx cannot continue.\\\\nerror code:0x%08X\"), GetLastError());");
-            let _ = writeln!(out, "        MessageBox(NULL, message, TEXT(\"AheadLibEx\"), MB_ICONSTOP);");
-            let _ = writeln!(out, "        return FALSE;");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    TCHAR* last = NULL;");
-            let _ = writeln!(out, "    for (TCHAR* p = module_path; *p; ++p)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        if (*p == TEXT('\\\\') || *p == TEXT('/'))");
-            let _ = writeln!(out, "        {{");
-            let _ = writeln!(out, "            last = p;");
-            let _ = writeln!(out, "        }}");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "    if (last)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        *(last + 1) = TEXT('\\0');");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "    else");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        module_path[0] = TEXT('\\0');");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    lstrcat(module_path, TEXT(\"{}\"));", original);
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    g_origin_module_handle = LoadLibrary(module_path);");
-            let _ = writeln!(out, "    if (!g_origin_module_handle)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        wsprintf(message, TEXT(\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\"), module_path, GetLastError());");
-            let _ = writeln!(out, "        MessageBox(NULL, message, TEXT(\"AheadLibEx\"), MB_ICONSTOP);");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    return g_origin_module_handle != NULL;");
-        }
+    let original = escape_c_text_literal(original_name);
+
+    let _ = writeln!(out, "    WCHAR module_path[MAX_PATH] = {{ 0 }};");
+    let _ = writeln!(out, "    WCHAR message[MAX_PATH] = {{ 0 }};");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    DWORD n = GetModuleFileNameW(module, module_path, MAX_PATH);");
+    let _ = writeln!(out, "    if (n == 0 || n >= MAX_PATH)");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        StringCchPrintfW(message, MAX_PATH,");
+    let _ = writeln!(out, "            L\"GetModuleFileName failed, AheadLibEx cannot continue.\\\\nerror code:0x%08X\", GetLastError());");
+    let _ = writeln!(out, "        MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "        return FALSE;");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    WCHAR* last = nullptr;");
+    let _ = writeln!(out, "    for (WCHAR* p = module_path; *p; ++p)");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        if (*p == L'\\\\' || *p == L'/')");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            last = p;");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "    if (last)");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        *(last + 1) = L'\\0';");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "    else");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        module_path[0] = L'\\0';");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    if (FAILED(StringCchCatW(module_path, MAX_PATH, L\"{}\")))", original);
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        MessageBoxW(nullptr, L\"Path buffer overflow.\", L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "        return FALSE;");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    g_origin_module_handle = LoadLibraryW(module_path);");
+    let _ = writeln!(out, "    if (!g_origin_module_handle)");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        StringCchPrintfW(message, MAX_PATH,");
+    let _ = writeln!(out, "            L\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\",");
+    let _ = writeln!(out, "            module_path, GetLastError());");
+    let _ = writeln!(out, "        MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "        return FALSE;");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    return TRUE;");
+}
+
         OriginLoadMode::CustomPath { path } => {
-            let origin_cfg = escape_c_text_literal(path);
-            let _ = writeln!(out, "    TCHAR module_path[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "    TCHAR message[MAX_PATH] = {{ 0 }};");
-            let _ = writeln!(out, "    const TCHAR origin_cfg[] = TEXT(\"{}\");", origin_cfg);
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    if ((origin_cfg[0] && origin_cfg[1] == TEXT(':')) || origin_cfg[0] == TEXT('\\\\') || origin_cfg[0] == TEXT('/'))");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        lstrcpyn(module_path, origin_cfg, MAX_PATH);");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "    else");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        DWORD n = GetModuleFileName(module, module_path, MAX_PATH);");
-            let _ = writeln!(out, "        if (n == 0 || n >= MAX_PATH)");
-            let _ = writeln!(out, "        {{");
-            let _ = writeln!(out, "            wsprintf(message, TEXT(\"GetModuleFileName failed, AheadLibEx cannot continue.\\\\nerror code:0x%08X\"), GetLastError());");
-            let _ = writeln!(out, "            MessageBox(NULL, message, TEXT(\"AheadLibEx\"), MB_ICONSTOP);");
-            let _ = writeln!(out, "            return FALSE;");
-            let _ = writeln!(out, "        }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "        TCHAR* last = NULL;");
-            let _ = writeln!(out, "        for (TCHAR* p = module_path; *p; ++p)");
-            let _ = writeln!(out, "        {{");
-            let _ = writeln!(out, "            if (*p == TEXT('\\\\') || *p == TEXT('/'))");
-            let _ = writeln!(out, "            {{");
-            let _ = writeln!(out, "                last = p;");
-            let _ = writeln!(out, "            }}");
-            let _ = writeln!(out, "        }}");
-            let _ = writeln!(out, "        if (last)");
-            let _ = writeln!(out, "        {{");
-            let _ = writeln!(out, "            *(last + 1) = TEXT('\\0');");
-            let _ = writeln!(out, "        }}");
-            let _ = writeln!(out, "        else");
-            let _ = writeln!(out, "        {{");
-            let _ = writeln!(out, "            module_path[0] = TEXT('\\0');");
-            let _ = writeln!(out, "        }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "        lstrcat(module_path, origin_cfg);");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    g_origin_module_handle = LoadLibrary(module_path);");
-            let _ = writeln!(out, "    if (!g_origin_module_handle)");
-            let _ = writeln!(out, "    {{");
-            let _ = writeln!(out, "        wsprintf(message, TEXT(\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\"), module_path, GetLastError());");
-            let _ = writeln!(out, "        MessageBox(NULL, message, TEXT(\"AheadLibEx\"), MB_ICONSTOP);");
-            let _ = writeln!(out, "    }}");
-            let _ = writeln!(out, "");
-            let _ = writeln!(out, "    return g_origin_module_handle != NULL;");
-        }
+    let origin_cfg = escape_c_text_literal(path);
+
+    let _ = writeln!(out, "    WCHAR module_path[MAX_PATH] = {{ 0 }};");
+    let _ = writeln!(out, "    WCHAR message[MAX_PATH] = {{ 0 }};");
+    let _ = writeln!(out, "    const WCHAR origin_cfg[] = L\"{}\";", origin_cfg);
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    if ((origin_cfg[0] && origin_cfg[1] == L':') || origin_cfg[0] == L'\\\\' || origin_cfg[0] == L'/')");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        if (FAILED(StringCchCopyW(module_path, MAX_PATH, origin_cfg)))");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            MessageBoxW(nullptr, L\"Path buffer overflow.\", L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "            return FALSE;");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "    else");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        DWORD n = GetModuleFileNameW(module, module_path, MAX_PATH);");
+    let _ = writeln!(out, "        if (n == 0 || n >= MAX_PATH)");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            StringCchPrintfW(message, MAX_PATH,");
+    let _ = writeln!(out, "                L\"GetModuleFileName failed, AheadLibEx cannot continue.\\\\nerror code:0x%08X\", GetLastError());");
+    let _ = writeln!(out, "            MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "            return FALSE;");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "        WCHAR* last = nullptr;");
+    let _ = writeln!(out, "        for (WCHAR* p = module_path; *p; ++p)");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            if (*p == L'\\\\' || *p == L'/')");
+    let _ = writeln!(out, "            {{");
+    let _ = writeln!(out, "                last = p;");
+    let _ = writeln!(out, "            }}");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "        if (last)");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            *(last + 1) = L'\\0';");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "        else");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            module_path[0] = L'\\0';");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "        if (FAILED(StringCchCatW(module_path, MAX_PATH, origin_cfg)))");
+    let _ = writeln!(out, "        {{");
+    let _ = writeln!(out, "            MessageBoxW(nullptr, L\"Path buffer overflow.\", L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "            return FALSE;");
+    let _ = writeln!(out, "        }}");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    g_origin_module_handle = LoadLibraryW(module_path);");
+    let _ = writeln!(out, "    if (!g_origin_module_handle)");
+    let _ = writeln!(out, "    {{");
+    let _ = writeln!(out, "        StringCchPrintfW(message, MAX_PATH,");
+    let _ = writeln!(out, "            L\"Cannot locate %s, AheadLibEx cannot continue.\\\\nerror code:0x%08X\",");
+    let _ = writeln!(out, "            module_path, GetLastError());");
+    let _ = writeln!(out, "        MessageBoxW(nullptr, message, L\"AheadLibEx\", MB_ICONSTOP);");
+    let _ = writeln!(out, "        return FALSE;");
+    let _ = writeln!(out, "    }}");
+    let _ = writeln!(out, "");
+    let _ = writeln!(out, "    return TRUE;");
+}
+
     }
+
     out
 }
 
@@ -386,14 +435,14 @@ fn cl_item_group(base: &str, is_x64: bool) -> String {
     if is_x64 {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x64.c" />
+    <ClCompile Include="{base}_x64.cpp" />
   </ItemGroup>
 "#
         )
     } else {
         format!(
             r#"  <ItemGroup>
-    <ClCompile Include="{base}_x86.c" />
+    <ClCompile Include="{base}_x86.cpp" />
   </ItemGroup>
 "#
         )
@@ -602,7 +651,7 @@ fn filter_itemgroups(base: &str, is_x64: bool) -> String {
     if is_x64 {
         format!(
             r#"  <ItemGroup>
-     <ClCompile Include="{base}_x64.c">
+     <ClCompile Include="{base}_x64.cpp">
        <Filter>Source Files</Filter>
      </ClCompile>
    </ItemGroup>
@@ -616,7 +665,7 @@ fn filter_itemgroups(base: &str, is_x64: bool) -> String {
     } else {
         format!(
             r#"  <ItemGroup>
-     <ClCompile Include="{base}_x86.c">
+     <ClCompile Include="{base}_x86.cpp">
        <Filter>Source Files</Filter>
      </ClCompile>
   </ItemGroup>
@@ -768,7 +817,7 @@ pub fn render_c(ctx: &VsTemplateContext) -> String {
     for exp in &exports {
         let _ = writeln!(
             forward_decls,
-            "PVOID pfnAheadLibEx_{} = NULL;",
+            "FARPROC pfnAheadLibEx_{} = nullptr;",
             exp.stub
         );
     }
@@ -830,7 +879,7 @@ pub fn render_c_x64(ctx: &VsTemplateContext) -> String {
     for exp in &exports {
         let _ = writeln!(
             forward_decls,
-            "PVOID pfnAheadLibEx_{} = NULL;",
+            "FARPROC pfnAheadLibEx_{} = nullptr;",
             exp.stub
         );
     }
@@ -1001,13 +1050,13 @@ pub fn render_cmake_lists(ctx: &VsTemplateContext, is_x64: bool) -> String {
 
     let (c_src, asm_masm, asm_gas) = if is_x64 {
         (
-            format!("{}_x64.c", ctx.base_name),
+            format!("{}_x64.cpp", ctx.base_name),
             format!("{}_x64_jump.asm", ctx.base_name),
             format!("{}_x64_jump.S", ctx.base_name),
         )
     } else {
         (
-            format!("{}_x86.c", ctx.base_name),
+            format!("{}_x86.cpp", ctx.base_name),
             format!("{}_x86_jump.asm", ctx.base_name),
             format!("{}_x86_jump.S", ctx.base_name),
         )
